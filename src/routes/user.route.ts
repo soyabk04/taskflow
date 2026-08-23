@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { userSignupSchemaValidator,userSigninSchemaValidator } from "../validators/user.validator.js";
-import { userSignupController,userSigninController } from "../controllers/user.controller.js";
+import { userSignupController,userSigninController, userRefreshTokenController, logoutController, logoutAllDevicesController } from "../controllers/user.controller.js";
 import { asyncHandler } from "../utils/asynchandler.js";
 const userRouter=Router()
 
@@ -13,7 +13,19 @@ userRouter.post(
 userRouter.post(
     '/login',
     userSigninSchemaValidator,
-    userSigninController
+    asyncHandler(userSigninController)
+)
+userRouter.post(
+    '/refreshToken',
+    asyncHandler(userRefreshTokenController)
 )
 
+userRouter.post(
+    '/logout',
+    asyncHandler(logoutController)
+)
+userRouter.post(
+    '/logoutalldevices',
+    asyncHandler(logoutAllDevicesController)
+)
 export default userRouter

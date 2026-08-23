@@ -17,3 +17,14 @@ export const tokenGenerator = (data: TokenPayload) => {
         refreshToken,
     };
 };
+export const verifyToken = (
+  token: string,
+  tokenType: "AT" | "RT"
+) => {
+  const secretKey =
+    tokenType === "AT"
+      ? ATJWTKEY
+      : RTJWTKEY;
+
+  return jwt.verify(token, secretKey);
+};

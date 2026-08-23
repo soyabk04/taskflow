@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ESNext",
+    "strict": true,
+    "types": ["node"],
+    "skipLibCheck": true
+  },
+  "include": ["prisma.config.ts"]
+}

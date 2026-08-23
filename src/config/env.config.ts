@@ -13,3 +13,4 @@ function getenv(name:string){
 
 export const ATJWTKEY=getenv('ATJWTKEY');
 export const RTJWTKEY=getenv('RTJWTKEY');
+export const DATABASE_URL=getenv('DATABASE_URL');

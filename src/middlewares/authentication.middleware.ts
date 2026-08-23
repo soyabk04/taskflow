@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { ATJWTKEY } from "../config/env.config.js";
+import { AppError } from "../errors/AppError.js";
 
 
 export const authMiddleware = (
@@ -8,13 +9,14 @@ export const authMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  const authHeader = req.cookies.accesstoken
+  const authHeader = req.cookies.accessToken
 
   if (!authHeader) {
-    return res.status(401).json({
-      success: false,
-      message: "Authorization token missing",
-    });
+    throw new AppError(
+      'Authorization token missing',
+      401,
+      'INVALID_AUTH_TOKEN'
+    )
   }
 
   const token = authHeader;
@@ -26,7 +28,7 @@ export const authMiddleware = (
   }
 
   try {
-    const decoded = jwt.verify(token, ATJWTKEY) as { userId: string; role: string };
+    const decoded = jwt.verify(token, ATJWTKEY) as { id: string; email:string };
     req.user = decoded;
      
 
