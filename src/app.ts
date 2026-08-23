@@ -14,7 +14,6 @@ app.use('/auth',userRouter)
 app.use('/organization',orgRouter)
 app.use('/organizations',taskRouter)
 app.use(errorMiddleware)
+export default app
 
-app.listen(3000,()=>{
-    console.log('server is running on port 3000')
-})
+

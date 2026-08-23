@@ -13,6 +13,7 @@ import { AppError } from '../errors/AppError.js'
 
 export const userSignupController = async (req: Request, res: Response) => {
     const { user } = req.body
+    console.log(user)
     const createdUser = await userSignupService(user)
     res.send({
         success: true,

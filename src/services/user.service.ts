@@ -8,24 +8,34 @@ import { mailQueue } from "../queues/mail.queue.js";
 
 
 export const userSignupService = async (data: User) => {
-    const userData = data;
-    const isUserExists = await prisma.user.findUnique(
-        {
-            where: { email: userData.email }
-        }
+  const isUserExists = await prisma.user.findUnique({
+    where: {
+      email: data.email
+    }
+  });
+
+  if (isUserExists) {
+    throw new AppError(
+      "user already exists",
+      403,
+      "USER_ALREADY_EXISTS"
     );
-    if (isUserExists) {
-        throw new AppError(
-            'user already exists',
-            403,
-            'USER_ALREADY_EXISTS'
-        );
-    };
-    const hashedpassword = await hashPassword(userData.password);
-    userData.password = hashedpassword
-    const createUser = await prisma.user.create({ data: userData })
-    return createUser
-}
+  }
+
+  const hashedPassword = await hashPassword(data.password);
+  const createUser = await prisma.user.create({
+    data: {
+      email: data.email,
+      name: data.name,
+      password: hashedPassword
+    }
+  });
+  await mailQueue.add("welcome-mail", {
+    email: createUser.email,
+    name: createUser.name
+  });
+  return createUser;
+};
 
 export const userSigninService = async (data: UserSignin) => {
     const user = await prisma.user.findUnique({
@@ -126,51 +136,51 @@ export const myUserInfoService = (data: any) => {
 }
 
 export const logout = async (data: string) => {
-  const token = await prisma.refreshToken.findUnique({
-    where: {
-      token: data
-    }
-  });
+    const token = await prisma.refreshToken.findUnique({
+        where: {
+            token: data
+        }
+    });
 
-  if (!token || token.revokedAt) {
-    throw new AppError(
-      "Invalid refresh token",
-      401,
-      "INVALID_REFRESH_TOKEN"
-    );
-  }
-
-  await prisma.refreshToken.update({
-    where: {
-      token: data
-    },
-    data: {
-      revokedAt: new Date()
+    if (!token || token.revokedAt) {
+        throw new AppError(
+            "Invalid refresh token",
+            401,
+            "INVALID_REFRESH_TOKEN"
+        );
     }
-  });
+
+    await prisma.refreshToken.update({
+        where: {
+            token: data
+        },
+        data: {
+            revokedAt: new Date()
+        }
+    });
 };
 
 export const logoutAllDevices = async (data: string) => {
-  const token = await prisma.refreshToken.findUnique({
-    where: {
-      token: data
-    }
-  });
+    const token = await prisma.refreshToken.findUnique({
+        where: {
+            token: data
+        }
+    });
 
-  if (!token || token.revokedAt) {
-    throw new AppError(
-      "Invalid refresh token",
-      401,
-      "INVALID_REFRESH_TOKEN"
-    );
-  }
-
-  await prisma.refreshToken.updateMany({
-    where: {
-      userId: token.userId
-    },
-    data: {
-      revokedAt: new Date()
+    if (!token || token.revokedAt) {
+        throw new AppError(
+            "Invalid refresh token",
+            401,
+            "INVALID_REFRESH_TOKEN"
+        );
     }
-  });
+
+    await prisma.refreshToken.updateMany({
+        where: {
+            userId: token.userId
+        },
+        data: {
+            revokedAt: new Date()
+        }
+    });
 };
