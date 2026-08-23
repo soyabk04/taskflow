@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsc && node dist/server.js ",
+    "dev": "tsc && node dist/server.js && npm prisma generate && npm prisma migrate dev ",
     "worker": "tsx watch src/workers/mail.worker.ts",
     "build": "tsc",
     "start": "node dist/server.js",
