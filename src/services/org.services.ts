@@ -1,5 +1,7 @@
 import { prisma } from "../libs/prisma.js";
 import { AppError } from "../errors/AppError.js";
+import { mailQueue } from "../queues/mail.queue.js";
+
 
 
 
@@ -17,7 +19,6 @@ export const createOrg = async (
       "ORG_NAME_REQUIRED"
     );
   }
-    console.log(userInfo)
   const user = await prisma.user.findUnique({
     where: {
       id: userInfo.id
@@ -31,7 +32,6 @@ export const createOrg = async (
       "USER_NOT_FOUND"
     );
   }
-console.log(0)
   const result = await prisma.$transaction(async (tx) => {
     const organization = await tx.organization.create({
       data: {
@@ -46,6 +46,12 @@ console.log(0)
         role: "org_admin"
       }
     });
+      await mailQueue.add("organization-member-added", {
+    email: user.email,
+    name: user.name,
+    organizationName: organization.name
+  });
+
 
     return {
       organization,
@@ -60,7 +66,6 @@ console.log(0)
 export const addMember = async (
   admin: {
     id: string;
-    email:string;
     organizationId: string;
   },
   email: string
@@ -73,6 +78,7 @@ const Admin = await prisma.orgMember.findUnique({
     }
   }
 });
+
     if(!Admin){
         throw new AppError(
             'user cant add member in this organization',
@@ -80,20 +86,20 @@ const Admin = await prisma.orgMember.findUnique({
             'UNAUTHORIZE'
         )
     }
-  // Only organization admins can add members
-  if (Admin.role !== "org_admin") {
+
+    if (Admin.role !== "org_admin") {
     throw new AppError(
       "Only organization admins can add members",
       403,
       "FORBIDDEN"
     );
   }
-
   const memberUser = await prisma.user.findUnique({
     where: {
       email
     }
   });
+      
 
   if (!memberUser) {
     throw new AppError(
@@ -127,6 +133,15 @@ const Admin = await prisma.orgMember.findUnique({
       role: "member"
     }
   });
+  const organization= await prisma.organization.findUnique({where:{
+    id:admin.organizationId
+  }})
+        await mailQueue.add("organization-member-added", {
+    email: memberUser.email,
+    name: memberUser.name,
+    organizationName: organization?.name
+  });
+  
 
   return membership;
 };

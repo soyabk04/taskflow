@@ -3,6 +3,7 @@ import { prisma } from '../libs/prisma.js'
 import { AppError } from "../errors/AppError.js";
 import { comparePassword, hashPassword } from "../utils/bcrypt.js";
 import { tokenGenerator, verifyToken } from "../utils/tokenGenerator.js";
+import { mailQueue } from "../queues/mail.queue.js";
 
 
 
